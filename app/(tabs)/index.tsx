@@ -16,6 +16,7 @@ import { Colors } from "@/constants/Colors";
 import { formatDistanceToNow, format } from "date-fns";
 import { Expense } from "@/utils/storage";
 import { router } from "expo-router";
+import { CATEGORIES } from "./categories";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -44,22 +45,34 @@ export default function RecordsScreen() {
     return expenses.reduce((sum, expense) => sum + expense.amount, 0);
   };
 
-  const renderExpenseItem = ({ item }: { item: Expense }) => (
-    <TouchableOpacity onPress={() => setSelectedExpense(item)}>
-      <ThemedView style={styles.expenseItem}>
-        <ThemedView style={styles.expenseHeader}>
-          <ThemedText type="defaultSemiBold">{item.description}</ThemedText>
-          <ThemedText type="defaultSemiBold">₹{item.amount}</ThemedText>
+  const renderExpenseItem = ({ item }: { item: Expense }) => {
+    // Find the category to get its emoji
+    const categoryInfo = CATEGORIES.find((cat: any) => cat.name === item.category);
+
+    return (
+      <TouchableOpacity onPress={() => setSelectedExpense(item)}>
+        <ThemedView style={styles.expenseItem}>
+          <ThemedView style={styles.expenseHeader}>
+            <ThemedView style={styles.categoryContainer}>
+              <ThemedText style={styles.categoryEmoji}>
+                {categoryInfo?.emoji || "📝"}
+              </ThemedText>
+              <ThemedText style={styles.category}>{item.category}</ThemedText>
+            </ThemedView>
+            <ThemedText type="defaultSemiBold">₹{item.amount}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.expenseFooter}>
+            <ThemedText style={styles.description}>
+              {item.description}
+            </ThemedText>
+            <ThemedText style={styles.date}>
+              {format(new Date(item.date), "MMM d, h:mm a")}
+            </ThemedText>
+          </ThemedView>
         </ThemedView>
-        <ThemedView style={styles.expenseFooter}>
-          <ThemedText style={styles.category}>{item.category}</ThemedText>
-          <ThemedText style={styles.date}>
-            {formatDistanceToNow(new Date(item.date), { addSuffix: true })}
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const renderDayGroup = ({
     item,
@@ -107,6 +120,7 @@ export default function RecordsScreen() {
         />
       )}
 
+      {/* Expense Details Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -210,6 +224,7 @@ export default function RecordsScreen() {
         </TouchableOpacity>
       </Modal>
 
+      {/* Delete Confirmation Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -327,21 +342,36 @@ const styles = StyleSheet.create({
   expenseHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
     backgroundColor: "transparent",
+  },
+  categoryContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "transparent",
+  },
+  categoryEmoji: {
+    fontSize: 20,
+  },
+  category: {
+    fontSize: 16,
+    fontWeight: "600",
   },
   expenseFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: "transparent",
   },
-  category: {
+  description: {
     fontSize: 14,
     opacity: 0.7,
   },
   date: {
-    fontSize: 14,
-    opacity: 0.7,
+    fontSize: 12,
+    opacity: 0.5,
   },
   fab: {
     position: "absolute",
