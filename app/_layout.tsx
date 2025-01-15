@@ -8,6 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SplashScreen } from "@/components/SplashScreen";
+import { ExpenseProvider } from "@/contexts/ExpenseContext";
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -30,13 +31,17 @@ export default function RootLayout() {
       <ThemeProvider>
         {({ isDark }) => (
           <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-            {showSplash && (
-              <SplashScreen onAnimationComplete={() => setShowSplash(false)} />
-            )}
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
+            <ExpenseProvider>
+              {showSplash && (
+                <SplashScreen
+                  onAnimationComplete={() => setShowSplash(false)}
+                />
+              )}
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </ExpenseProvider>
           </NavigationThemeProvider>
         )}
       </ThemeProvider>
