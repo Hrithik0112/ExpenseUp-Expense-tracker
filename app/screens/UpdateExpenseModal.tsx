@@ -6,6 +6,8 @@ import {
   Dimensions,
   SafeAreaView,
   ScrollView,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -166,6 +168,7 @@ export default function UpdateExpenseModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: "row",

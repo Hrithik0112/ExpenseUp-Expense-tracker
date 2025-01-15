@@ -4,6 +4,8 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -21,6 +23,7 @@ export default function AddExpenseModal() {
   const { addExpense } = useExpenses();
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -133,22 +136,54 @@ export default function AddExpenseModal() {
               styles.dateButton,
               { borderColor: isDark ? "#404040" : "#e0e0e0" },
             ]}
-            onPress={() => setShowDatePicker(true)}
+            onPress={() => {
+              if (Platform.OS === "android") {
+                setShowDatePicker(true);
+              } else {
+                setShowDatePicker(true);
+              }
+            }}
           >
             <ThemedText>{date.toLocaleString()}</ThemedText>
           </TouchableOpacity>
 
-          {showDatePicker && (
+          {Platform.OS === "ios" ? (
             <DateTimePicker
               value={date}
               mode="datetime"
+              display="inline"
               onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) {
-                  setDate(selectedDate);
-                }
+                if (selectedDate) setDate(selectedDate);
               }}
             />
+          ) : (
+            <>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+                    if (selectedDate) {
+                      setDate(selectedDate);
+                      setShowTimePicker(true);
+                    }
+                  }}
+                />
+              )}
+              {showTimePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="time"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowTimePicker(false);
+                    if (selectedDate) setDate(selectedDate);
+                  }}
+                />
+              )}
+            </>
           )}
         </ScrollView>
       </ThemedView>
@@ -159,6 +194,7 @@ export default function AddExpenseModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: "row",
