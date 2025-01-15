@@ -2,11 +2,11 @@ import { StyleSheet } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
-export default function RecordsScreen() {
+export default function AnalyticsScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Records</ThemedText>
-      <ThemedText>Your expense records will appear here</ThemedText>
+      <ThemedText type="title">Analytics</ThemedText>
+      <ThemedText>Your expense analytics will appear here</ThemedText>
     </ThemedView>
   );
 }
