@@ -92,7 +92,7 @@ export default function AddExpenseModal() {
             ]}
             value={amount}
             onChangeText={setAmount}
-            placeholder="0.00"
+            placeholder="₹0.00"
             keyboardType="numeric"
             placeholderTextColor={isDark ? "#808080" : "#666666"}
           />

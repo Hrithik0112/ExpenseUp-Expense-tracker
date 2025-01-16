@@ -125,7 +125,7 @@ export default function AnalyticsScreen() {
               <ThemedText style={styles.categoryText}>
                 {CATEGORY_EMOJIS[category] || "📍"} {category}
               </ThemedText>
-              <ThemedText>{(amount as number).toFixed(2)}</ThemedText>
+              <ThemedText>₹{(amount as number).toFixed(2)}</ThemedText>
             </View>
             <View style={styles.loadingBarBg}>
               <View
@@ -177,7 +177,7 @@ export default function AnalyticsScreen() {
             <View key={month} style={styles.categoryItem}>
               <View style={styles.categoryHeader}>
                 <ThemedText style={styles.categoryText}>📅 {month}</ThemedText>
-                <ThemedText>{amount.toFixed(2)}</ThemedText>
+                <ThemedText>₹{amount.toFixed(2)}</ThemedText>
               </View>
               <View style={styles.loadingBarBg}>
                 <View

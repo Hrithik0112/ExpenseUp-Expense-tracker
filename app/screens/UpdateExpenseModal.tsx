@@ -80,7 +80,7 @@ export default function UpdateExpenseModal() {
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"
-              placeholder="0.00"
+              placeholder="₹0.00"
               placeholderTextColor={isDark ? "#808080" : "#666666"}
             />
           </ThemedView>

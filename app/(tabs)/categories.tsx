@@ -95,7 +95,7 @@ export default function CategoriesScreen() {
                     {selectedCategory}
                   </ThemedText>
                   <ThemedText type="subtitle">
-                    ${getTotalAmount(selectedCategory)}
+                    ₹{getTotalAmount(selectedCategory)}
                   </ThemedText>
                 </ThemedView>
 
@@ -103,7 +103,7 @@ export default function CategoriesScreen() {
                   {getCategoryExpenses(selectedCategory).map((expense) => (
                     <ThemedView key={expense.id} style={styles.expenseItem}>
                       <ThemedText>{expense.description}</ThemedText>
-                      <ThemedText>${expense.amount.toFixed(2)}</ThemedText>
+                      <ThemedText>₹{expense.amount.toFixed(2)}</ThemedText>
                     </ThemedView>
                   ))}
                 </ScrollView>

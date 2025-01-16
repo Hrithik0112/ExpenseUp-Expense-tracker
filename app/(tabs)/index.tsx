@@ -13,7 +13,15 @@ import { useExpenses } from "@/contexts/ExpenseContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Colors } from "@/constants/Colors";
-import { formatDistanceToNow, format } from "date-fns";
+import {
+  formatDistanceToNow,
+  format,
+  startOfWeek,
+  startOfMonth,
+  isWithinInterval,
+  endOfWeek,
+  endOfMonth,
+} from "date-fns";
 import { Expense } from "@/utils/storage";
 import { router } from "expo-router";
 import { CATEGORIES } from "./categories";
@@ -26,6 +34,10 @@ export default function RecordsScreen() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
+  const [viewType, setViewType] = useState<"daily" | "weekly" | "monthly">(
+    "daily"
+  );
+  const [showViewModal, setShowViewModal] = useState(false);
 
   // Group expenses by date
   const groupedExpenses = expenses.reduce(
@@ -47,7 +59,9 @@ export default function RecordsScreen() {
 
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     // Find the category to get its emoji
-    const categoryInfo = CATEGORIES.find((cat: any) => cat.name === item.category);
+    const categoryInfo = CATEGORIES.find(
+      (cat: any) => cat.name === item.category
+    );
 
     return (
       <TouchableOpacity onPress={() => setSelectedExpense(item)}>
@@ -82,7 +96,14 @@ export default function RecordsScreen() {
     <ThemedView style={styles.dayGroup}>
       <ThemedView style={styles.dayHeader}>
         <ThemedText type="subtitle">
-          {format(new Date(item.date), "MMMM d, yyyy")}
+          {viewType === "weekly"
+            ? `${format(startOfWeek(new Date(item.date)), "MMM d")} - ${format(
+                endOfWeek(new Date(item.date)),
+                "MMM d, yyyy"
+              )}`
+            : viewType === "monthly"
+            ? format(new Date(item.date), "MMMM yyyy")
+            : format(new Date(item.date), "MMMM d, yyyy")}
         </ThemedText>
         <ThemedText type="defaultSemiBold">
           ₹{getDayTotal(item.expenses)}
@@ -94,8 +115,140 @@ export default function RecordsScreen() {
     </ThemedView>
   );
 
+  const groupExpensesByView = () => {
+    switch (viewType) {
+      case "weekly":
+        return expenses.reduce(
+          (groups: { [key: string]: Expense[] }, expense) => {
+            const date = new Date(expense.date);
+            const weekStart = startOfWeek(date);
+            const weekKey = format(weekStart, "yyyy-MM-dd");
+            if (!groups[weekKey]) groups[weekKey] = [];
+            groups[weekKey].push(expense);
+            return groups;
+          },
+          {}
+        );
+      case "monthly":
+        return expenses.reduce(
+          (groups: { [key: string]: Expense[] }, expense) => {
+            const monthKey = format(new Date(expense.date), "yyyy-MM");
+            if (!groups[monthKey]) groups[monthKey] = [];
+            groups[monthKey].push(expense);
+            return groups;
+          },
+          {}
+        );
+      default:
+        return groupedExpenses; // existing daily view
+    }
+  };
+
+  const ViewSwitcherModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showViewModal}
+      onRequestClose={() => setShowViewModal(false)}
+    >
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={() => setShowViewModal(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <ThemedView style={styles.viewSwitcherModal}>
+            <TouchableOpacity
+              style={[
+                styles.viewOption,
+                viewType === "daily" && styles.selectedView,
+              ]}
+              onPress={() => {
+                setViewType("daily");
+                setShowViewModal(false);
+              }}
+            >
+              <ThemedText>
+                <Ionicons
+                  name="calendar-outline"
+                  size={24}
+                  color={viewType === "daily" ? "#fff" : Colors.light.tint}
+                />
+              </ThemedText>
+              <ThemedText
+                style={[viewType === "daily" && styles.selectedViewText]}
+              >
+                Daily View
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewOption,
+                viewType === "weekly" && styles.selectedView,
+              ]}
+              onPress={() => {
+                setViewType("weekly");
+                setShowViewModal(false);
+              }}
+            >
+              <ThemedText>
+                <Ionicons
+                  name="calendar-outline"
+                  size={24}
+                  color={viewType === "weekly" ? "#fff" : Colors.light.tint}
+                />
+              </ThemedText>
+              <ThemedText
+                style={[viewType === "weekly" && styles.selectedViewText]}
+              >
+                Weekly View
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewOption,
+                viewType === "monthly" && styles.selectedView,
+              ]}
+              onPress={() => {
+                setViewType("monthly");
+                setShowViewModal(false);
+              }}
+            >
+              <ThemedText>
+                <Ionicons
+                  name="calendar-outline"
+                  size={24}
+                  color={viewType === "monthly" ? "#fff" : Colors.light.tint}
+                />
+              </ThemedText>
+              <ThemedText
+                style={[viewType === "monthly" && styles.selectedViewText]}
+              >
+                Monthly View
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+
   return (
     <ThemedView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title">Records</ThemedText>
+        <TouchableOpacity onPress={() => setShowViewModal(true)}>
+          <Ionicons
+            name="filter-outline"
+            size={24}
+            color={isDark ? Colors.dark.text : Colors.light.text}
+          />
+        </TouchableOpacity>
+      </ThemedView>
+
       {isLoading ? (
         <ThemedText>Loading...</ThemedText>
       ) : expenses.length === 0 ? (
@@ -110,10 +263,12 @@ export default function RecordsScreen() {
         </ThemedView>
       ) : (
         <FlatList
-          data={Object.entries(groupedExpenses).map(([date, expenses]) => ({
-            date,
-            expenses,
-          }))}
+          data={Object.entries(groupExpensesByView()).map(
+            ([date, expenses]) => ({
+              date,
+              expenses,
+            })
+          )}
           renderItem={renderDayGroup}
           keyExtractor={(item) => item.date}
           contentContainerStyle={styles.list}
@@ -315,6 +470,8 @@ export default function RecordsScreen() {
       >
         <Ionicons name="add" size={24} color="#FFF" />
       </TouchableOpacity>
+
+      {ViewSwitcherModal()}
     </ThemedView>
   );
 }
@@ -518,5 +675,34 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     color: "#FFF",
     fontWeight: "600",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    paddingBottom: 10,
+  },
+  viewSwitcherModal: {
+    backgroundColor: Colors.light.background,
+    borderRadius: 16,
+    padding: 16,
+    width: screenWidth * 0.85,
+    gap: 12,
+  },
+  viewOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 8,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: Colors.light.tint,
+  },
+  selectedView: {
+    backgroundColor: Colors.light.tint,
+  },
+  selectedViewText: {
+    color: "#fff",
   },
 });
