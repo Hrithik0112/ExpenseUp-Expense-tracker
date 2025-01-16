@@ -19,16 +19,16 @@ const screenWidth = Dimensions.get("window").width;
 
 // Define an array of colors for categories
 const CHART_COLORS = [
-  "#FF6384", // red
-  "#36A2EB", // blue
-  "#FFCE56", // yellow
-  "#4BC0C0", // teal
-  "#9966FF", // purple
-  "#FF9F40", // orange
-  "#2ECC71", // green
-  "#E74C3C", // dark red
-  "#3498DB", // light blue
-  "#F1C40F", // gold
+  "rgba(255, 99, 132, 0.7)", // pastel red
+  "rgba(54, 162, 235, 0.7)", // pastel blue
+  "rgba(255, 206, 86, 0.7)", // pastel yellow
+  "rgba(75, 192, 192, 0.7)", // pastel teal
+  "rgba(153, 102, 255, 0.7)", // pastel purple
+  "rgba(255, 159, 64, 0.7)", // pastel orange
+  "rgba(46, 204, 113, 0.7)", // pastel green
+  "rgba(231, 76, 60, 0.7)", // pastel dark red
+  "rgba(52, 152, 219, 0.7)", // pastel light blue
+  "rgba(241, 196, 15, 0.7)", // pastel gold
 ];
 
 // Add this emoji mapping constant
@@ -54,8 +54,8 @@ export default function AnalyticsScreen() {
   const pieChartData = Object.keys(categoryData).map((category, index) => ({
     name: category,
     amount: categoryData[category],
-    color: CHART_COLORS[index % CHART_COLORS.length], // cycle through colors
-    legendFontColor: isDark ? "#fff" : "#000",
+    color: CHART_COLORS[index % CHART_COLORS.length],
+    legendFontColor: Colors.light.text,
   }));
 
   // Monthly data for line chart
@@ -69,9 +69,9 @@ export default function AnalyticsScreen() {
   }, {});
 
   const chartConfig = {
-    backgroundGradientFrom: isDark ? "#000" : "#fff",
-    backgroundGradientTo: isDark ? "#000" : "#fff",
-    color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`, // bright blue
+    backgroundGradientFrom: Colors.light.background,
+    backgroundGradientTo: Colors.light.background,
+    color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`,
     strokeWidth: 2,
     barPercentage: 0.5,
     propsForDots: {
@@ -81,9 +81,9 @@ export default function AnalyticsScreen() {
     },
     propsForBackgroundLines: {
       strokeDasharray: "", // solid grid lines
-      stroke: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+      stroke: "rgba(0,0,0,0.1)",
     },
-    fillShadowGradient: "#36A2EB", // gradient fill color
+    fillShadowGradient: "#36A2EB",
     fillShadowGradientOpacity: 0.3,
   };
 
@@ -308,26 +308,26 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
   header: {
-    marginBottom: 20,
     zIndex: 1,
+    padding: 20,
   },
   dropdown: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 10,
+    padding: 20,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#e0e0e0",
+    width: "100%",
   },
   dropdownMenu: {
     position: "absolute",
+    width: "100%",
     top: 50,
-    left: 0,
-    right: 0,
+    left: "5%",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#e0e0e0",
@@ -340,6 +340,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    zIndex: 1000,
   },
   dropdownItem: {
     padding: 15,
@@ -349,11 +350,13 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 30,
     alignItems: "center",
+    padding: 20,
   },
   categoryBreakdown: {
     width: "100%",
     marginTop: 25,
     gap: 20,
+    padding: 20,
   },
   categoryItem: {
     width: "100%",
@@ -368,14 +371,14 @@ const styles = StyleSheet.create({
   },
   loadingBarBg: {
     width: "100%",
-    height: 12,
+    height: 24,
     backgroundColor: "#f0f0f0",
-    borderRadius: 10,
+    borderRadius: 8,
     overflow: "hidden",
   },
   loadingBarFill: {
     height: "100%",
-    borderRadius: 10,
-    opacity: 0.85,
+    borderRadius: 8,
+    opacity: 0.65,
   },
 });

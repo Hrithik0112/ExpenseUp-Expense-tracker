@@ -14,7 +14,6 @@ import { useEffect } from "react";
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeContext";
 
-const { height } = Dimensions.get("window");
 
 type Props = {
   onAnimationComplete: () => void;
@@ -86,11 +85,11 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "Outfit-Bold",
     fontSize: 42,
-    marginTop: 16,
+    paddingTop: 16,
   },
   slogan: {
     fontFamily: "Poppins-Regular",
-    fontSize: 16,
+    fontSize: 18,
     opacity: 0.8,
   },
 });
