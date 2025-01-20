@@ -10,6 +10,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { useExpenses } from "@/contexts/ExpenseContext";
+import { useIncomes } from "@/contexts/IncomeContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -38,8 +39,9 @@ const CATEGORY_EMOJIS: { [key: string]: string } = Object.fromEntries(
 
 export default function AnalyticsScreen() {
   const { expenses } = useExpenses();
+  const { incomes } = useIncomes();
   const { isDark } = useTheme();
-  const [selectedChart, setSelectedChart] = useState("category"); // 'category', 'monthly', 'trend'
+  const [selectedChart, setSelectedChart] = useState("category"); // 'category', 'monthly', 'income', 'comparison'
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Category-wise data for pie chart
@@ -109,6 +111,47 @@ export default function AnalyticsScreen() {
         strokeWidth: 2,
       },
     ],
+  };
+
+  // Monthly income data
+  const monthlyIncome = incomes.reduce((acc: any, income) => {
+    const month = new Date(income.date).getMonth();
+    if (!acc[month]) {
+      acc[month] = 0;
+    }
+    acc[month] += income.amount;
+    return acc;
+  }, {});
+
+  // Income vs Expense comparison data
+  const comparisonData = {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    datasets: [
+      {
+        data: Array.from({ length: 12 }, (_, i) => monthlyIncome[i] || 0),
+        color: (opacity = 1) => `rgba(46, 204, 113, ${opacity})`, // Green for income
+        strokeWidth: 2,
+      },
+      {
+        data: Array.from({ length: 12 }, (_, i) => monthlyData[i] || 0),
+        color: (opacity = 1) => `rgba(231, 76, 60, ${opacity})`, // Red for expenses
+        strokeWidth: 2,
+      },
+    ],
+    legend: ["Income", "Expenses"],
   };
 
   const renderCategoryBreakdown = () => {
@@ -198,6 +241,56 @@ export default function AnalyticsScreen() {
     );
   };
 
+  const renderMonthlyIncomeBreakdown = () => {
+    const totalMonthly = Object.values(monthlyIncome).reduce(
+      (sum: number, amount: any): number => sum + Number(amount),
+      0
+    );
+
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    return (
+      <View style={styles.categoryBreakdown}>
+        {months.map((month, index) => {
+          const amount = monthlyIncome[index] || 0;
+          return (
+            <View key={month} style={styles.categoryItem}>
+              <View style={styles.categoryHeader}>
+                <ThemedText style={styles.categoryText}>💰 {month}</ThemedText>
+                <ThemedText>₹{amount.toFixed(2)}</ThemedText>
+              </View>
+              <View style={styles.loadingBarBg}>
+                <View
+                  style={[
+                    styles.loadingBarFill,
+                    {
+                      width: `${(amount / totalMonthly) * 100}%`,
+                      backgroundColor:
+                        CHART_COLORS[index % CHART_COLORS.length],
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   const renderSelectedChart = () => {
     switch (selectedChart) {
       case "category":
@@ -228,19 +321,77 @@ export default function AnalyticsScreen() {
             {renderMonthlyBreakdown()}
           </>
         );
-      case "trend":
+      case "income":
         return (
           <>
             <LineChart
-              data={lineChartData}
+              data={{
+                labels: [
+                  "Jan",
+                  "Feb",
+                  "Mar",
+                  "Apr",
+                  "May",
+                  "Jun",
+                  "Jul",
+                  "Aug",
+                  "Sep",
+                  "Oct",
+                  "Nov",
+                  "Dec",
+                ],
+                datasets: [
+                  {
+                    data: Array.from(
+                      { length: 12 },
+                      (_, i) => monthlyIncome[i] || 0
+                    ),
+                    color: (opacity = 1) => `rgba(46, 204, 113, ${opacity})`,
+                    strokeWidth: 2,
+                  },
+                ],
+              }}
+              width={screenWidth - 40}
+              height={220}
+              chartConfig={{
+                ...chartConfig,
+                color: (opacity = 1) => `rgba(46, 204, 113, ${opacity})`,
+              }}
+              bezier
+            />
+            {renderMonthlyIncomeBreakdown()}
+          </>
+        );
+      case "comparison":
+        return (
+          <>
+            <LineChart
+              data={comparisonData}
               width={screenWidth - 40}
               height={220}
               chartConfig={chartConfig}
               bezier
-              withDots={false}
-              withShadow
             />
-            {renderMonthlyBreakdown()}
+            <ThemedView style={styles.comparisonLegend}>
+              <ThemedView style={styles.legendItem}>
+                <View
+                  style={[
+                    styles.legendColor,
+                    { backgroundColor: "rgba(46, 204, 113, 0.7)" },
+                  ]}
+                />
+                <ThemedText>Income</ThemedText>
+              </ThemedView>
+              <ThemedView style={styles.legendItem}>
+                <View
+                  style={[
+                    styles.legendColor,
+                    { backgroundColor: "rgba(231, 76, 60, 0.7)" },
+                  ]}
+                />
+                <ThemedText>Expenses</ThemedText>
+              </ThemedView>
+            </ThemedView>
           </>
         );
     }
@@ -258,7 +409,9 @@ export default function AnalyticsScreen() {
               ? "Category Breakdown"
               : selectedChart === "monthly"
               ? "Monthly Expenses"
-              : "Expense Trend"}
+              : selectedChart === "income"
+              ? "Monthly Income"
+              : "Income vs Expenses"}
           </ThemedText>
           <Ionicons
             name={showDropdown ? "chevron-up" : "chevron-down"}
@@ -290,11 +443,20 @@ export default function AnalyticsScreen() {
             <TouchableOpacity
               style={styles.dropdownItem}
               onPress={() => {
-                setSelectedChart("trend");
+                setSelectedChart("income");
                 setShowDropdown(false);
               }}
             >
-              <ThemedText>Expense Trend</ThemedText>
+              <ThemedText>Monthly Income</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.dropdownItem}
+              onPress={() => {
+                setSelectedChart("comparison");
+                setShowDropdown(false);
+              }}
+            >
+              <ThemedText>Income vs Expenses</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         )}
@@ -380,5 +542,22 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 8,
     opacity: 0.65,
+  },
+  comparisonLegend: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 20,
+    marginTop: 16,
+    padding: 8,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  legendColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
 });

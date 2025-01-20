@@ -9,6 +9,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ExpenseProvider } from "@/contexts/ExpenseContext";
+import { IncomeProvider } from "@/contexts/IncomeContext";
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -32,23 +33,36 @@ export default function RootLayout() {
         {({ isDark }) => (
           <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
             <ExpenseProvider>
-              {showSplash && (
-                <SplashScreen
-                  onAnimationComplete={() => setShowSplash(false)}
-                />
-              )}
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
-                <Stack.Screen
-                  name="screens/AddExpenseModal"
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                  name="screens/UpdateExpenseModal"
-                  options={{ headerShown: false }}
-                />
-              </Stack>
+              <IncomeProvider>
+                {showSplash && (
+                  <SplashScreen
+                    onAnimationComplete={() => setShowSplash(false)}
+                  />
+                )}
+                <Stack>
+                  <Stack.Screen
+                    name="(tabs)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="+not-found" />
+                  <Stack.Screen
+                    name="screens/AddExpenseModal"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="screens/AddIncomeModal"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="screens/UpdateExpenseModal"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name="screens/UpdateIncomeModal"
+                    options={{ headerShown: false }}
+                  />
+                </Stack>
+              </IncomeProvider>
             </ExpenseProvider>
           </NavigationThemeProvider>
         )}

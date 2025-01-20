@@ -25,6 +25,7 @@ import {
 import { Expense } from "@/utils/storage";
 import { router } from "expo-router";
 import { CATEGORIES } from "./categories";
+import { FinancialSummary } from "@/components/FinancialSummary";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -248,6 +249,8 @@ export default function RecordsScreen() {
           />
         </TouchableOpacity>
       </ThemedView>
+
+      <FinancialSummary />
 
       {isLoading ? (
         <ThemedText>Loading...</ThemedText>
